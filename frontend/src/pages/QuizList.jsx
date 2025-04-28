@@ -1,19 +1,25 @@
-import React from 'react'
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { ref, get } from 'firebase/database';
+import { db } from '../firebase';
+import axios from "axios";
+
 
 const QuizList = () => {
   const [quizzes, setQuizzes] = useState([]);
 
-  // Fake demo quizzes (replace with backend fetch later)
   useEffect(() => {
-    const demoQuizzes = [
-      { id: 1, title: "Java Basics", description: "Test your Java skills", questions: 10 },
-      { id: 2, title: "Web Development", description: "HTML, CSS, JS", questions: 15 },
-      { id: 3, title: "Python Core", description: "Python syntax and logic", questions: 12 },
-    ];
-    setQuizzes(demoQuizzes);
+    const fetchQuizzes = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/quizzes");
+        setQuizzes(response.data.quizzes);
+      } catch (error) {
+        console.error("Error fetching quizzes:", error);
+      }
+    };
+
+    fetchQuizzes();
   }, []);
 
   return (
@@ -30,7 +36,7 @@ const QuizList = () => {
       <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {quizzes.map((quiz, index) => (
           <motion.div
-            key={quiz.id}
+            key={quiz._id || index}
             className="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition hover:scale-[1.02] flex flex-col justify-between"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -42,21 +48,23 @@ const QuizList = () => {
               </h3>
               <p className="text-gray-600 mb-3">{quiz.description}</p>
               <p className="text-sm text-gray-500 mb-4">
-                {quiz.questions} Questions
+                {quiz.questions.length} Questions
               </p>
             </div>
 
+          {quizzes.map(quiz => (
             <Link
-              to={`/quiz/${quiz.id}`}
-              className="mt-auto inline-block text-center bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition font-medium"
+              to={`/quiz/${quiz._id}`}
+              className="mt-auto inline-block cursor-pointer text-center bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 transition font-medium"
             >
               Start Quiz
             </Link>
+          ))}
           </motion.div>
         ))}
       </div>
     </div>
   );
-}
+};
 
 export default QuizList

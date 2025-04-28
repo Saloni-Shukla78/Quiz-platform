@@ -1,21 +1,39 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react';
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { getFirestore, collection, getDocs, orderBy, query, limit } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 const Leaderboard = () => {
   const [scores, setScores] = useState([]);
 
-  // Replace with backend fetch
   useEffect(() => {
-    const sampleScores = [
-      { name: "Anika Sharma", score: 9 },
-      { name: "Rahul Mehta", score: 8 },
-      { name: "Neha Verma", score: 7 },
-      { name: "Amit Singh", score: 6 },
-      { name: "Saloni Shukla", score: 5 },
-    ];
-    // Sort high to low
-    setScores(sampleScores.sort((a, b) => b.score - a.score));
+    const fetchScores = async () => {
+      try {
+        // Get Firestore instance
+        const db = getFirestore();
+        
+        // Create a query to fetch leaderboard data, ordered by score in descending order, limiting to top 10
+        const leaderboardRef = collection(db, "leaderboard");
+        const leaderboardQuery = query(leaderboardRef, orderBy("score", "desc"), limit(10));
+        
+        // Fetch the leaderboard data from Firestore
+        const querySnapshot = await getDocs(leaderboardQuery);
+        const leaderboardData = [];
+
+        // Process the fetched data
+        querySnapshot.forEach((doc) => {
+          leaderboardData.push(doc.data());
+        });
+
+        // Sort scores just in case
+        const sortedScores = leaderboardData.sort((a, b) => b.score - a.score);
+        setScores(sortedScores);
+      } catch (error) {
+        console.error("Failed to fetch leaderboard data:", error);
+      }
+    };
+
+    fetchScores();
   }, []);
 
   return (
@@ -31,38 +49,41 @@ const Leaderboard = () => {
         </h2>
 
         <div className="grid gap-4">
-          {scores.map((user, index) => (
-            <motion.div
-              key={index}
-              className={`flex items-center justify-between px-5 py-3 rounded-xl shadow-sm ${
-                index === 0
-                  ? "bg-yellow-100"
-                  : index === 1
-                  ? "bg-gray-200"
-                  : index === 2
-                  ? "bg-orange-100"
-                  : "bg-gray-50"
-              }`}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 * index }}
-            >
-              <div className="flex items-center gap-4">
-                <span className="text-xl font-bold text-indigo-600 w-6 text-right">
-                  #{index + 1}
-                </span>
-                <span className="text-lg font-medium text-gray-700">
-                  {user.name}
-                </span>
-              </div>
-              <span className="text-indigo-700 font-semibold">{user.score} pts</span>
-            </motion.div>
-          ))}
+          {scores.length > 0 ? (
+            scores.map((user, index) => (
+              <motion.div
+                key={index}
+                className={`flex items-center justify-between px-5 py-3 rounded-xl shadow-sm ${
+                  index === 0
+                    ? "bg-yellow-100"
+                    : index === 1
+                    ? "bg-gray-200"
+                    : index === 2
+                    ? "bg-orange-100"
+                    : "bg-gray-50"
+                }`}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * index }}
+              >
+                <div className="flex items-center gap-4">
+                  <span className="text-xl font-bold text-indigo-600 w-6 text-right">
+                    #{index + 1}
+                  </span>
+                  <span className="text-lg font-medium text-gray-700">
+                    {user.name}
+                  </span>
+                </div>
+                <span className="text-indigo-700 font-semibold">{user.score} pts</span>
+              </motion.div>
+            ))
+          ) : (
+            <div className="text-center text-gray-600">No scores yet.</div>
+          )}
         </div>
       </motion.div>
     </div>
   );
-}
-
+};
 
 export default Leaderboard

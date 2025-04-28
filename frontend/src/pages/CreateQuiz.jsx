@@ -1,17 +1,18 @@
-import React from 'react'
-import { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState } from 'react';
+import axios from 'axios';
+import { motion } from 'framer-motion';
 
 const CreateQuiz = () => {
-  const [quizTitle, setQuizTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [quizTitle, setQuizTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [questions, setQuestions] = useState([
     {
-      question: "",
-      options: ["", "", "", ""],
+      question: '',
+      options: ['', '', '', ''],
       correctAnswer: 0,
     },
   ]);
+  const [quizSaved, setQuizSaved] = useState(false);
 
   const handleQuestionChange = (index, value) => {
     const updated = [...questions];
@@ -32,10 +33,7 @@ const CreateQuiz = () => {
   };
 
   const addQuestion = () => {
-    setQuestions([
-      ...questions,
-      { question: "", options: ["", "", "", ""], correctAnswer: 0 },
-    ]);
+    setQuestions([...questions, { question: '', options: ['', '', '', ''], correctAnswer: 0 }]);
   };
 
   const removeQuestion = (index) => {
@@ -43,14 +41,40 @@ const CreateQuiz = () => {
     setQuestions(updated);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({
+    const quizData = {
       title: quizTitle,
       description,
       questions,
-    });
-    // Logic to send this to backend (API call)
+    };
+  
+    try {
+      const response = await axios.post('http://localhost:5000/api/quizzes', quizData, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+  
+      console.log('Quiz created:', response.data);
+  
+      // Reset form after successful save
+      setQuizTitle('');
+      setDescription('');
+      setQuestions([
+        {
+          question: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0,
+        },
+      ]);
+  
+      // Show success message
+      setQuizSaved(true);
+  
+      // Hide success message after 3 seconds
+      setTimeout(() => setQuizSaved(false), 3000);
+    } catch (error) {
+      console.error('Error creating quiz:', error);
+    }
   };
 
   return (
@@ -61,12 +85,10 @@ const CreateQuiz = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <h2 className="text-3xl font-bold text-indigo-700 text-center">
-          Create a New Quiz
-        </h2>
+        <h2 className="text-3xl font-bold text-indigo-700 text-center">Create a New Quiz</h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Quiz Title */}
+          
           <div>
             <label className="block mb-2 text-sm text-gray-600">Quiz Title</label>
             <input
@@ -79,7 +101,7 @@ const CreateQuiz = () => {
             />
           </div>
 
-          {/* Description */}
+          
           <div>
             <label className="block mb-2 text-sm text-gray-600">Description</label>
             <textarea
@@ -91,7 +113,7 @@ const CreateQuiz = () => {
             />
           </div>
 
-          {/* Questions */}
+          
           {questions.map((q, i) => (
             <div key={i} className="bg-indigo-50 p-4 rounded-xl space-y-4 relative">
               <div className="flex justify-between items-center">
@@ -106,6 +128,7 @@ const CreateQuiz = () => {
                   </button>
                 )}
               </div>
+
               <input
                 type="text"
                 value={q.question}
@@ -115,7 +138,7 @@ const CreateQuiz = () => {
                 required
               />
 
-              {/* Options */}
+              
               {q.options.map((option, j) => (
                 <input
                   key={j}
@@ -128,7 +151,7 @@ const CreateQuiz = () => {
                 />
               ))}
 
-              {/* Correct Answer Selector */}
+              
               <div>
                 <label className="block text-sm text-gray-600 mb-1">Correct Answer</label>
                 <select
@@ -136,9 +159,9 @@ const CreateQuiz = () => {
                   onChange={(e) => handleCorrectAnswerChange(i, e.target.value)}
                   className="w-full p-2 border rounded-lg"
                 >
-                  {q.options.map((_, index) => (
+                  {q.options.map((option, index) => (
                     <option key={index} value={index}>
-                      Option {index + 1}
+                      {option ? option : `Option ${index + 1}`}
                     </option>
                   ))}
                 </select>
@@ -146,7 +169,7 @@ const CreateQuiz = () => {
             </div>
           ))}
 
-          {/* Add Question */}
+          
           <button
             type="button"
             onClick={addQuestion}
@@ -155,17 +178,24 @@ const CreateQuiz = () => {
             + Add Another Question
           </button>
 
-          {/* Submit */}
+          
           <button
             type="submit"
             className="w-full bg-indigo-600 text-white hover:bg-indigo-700 font-bold py-3 rounded-xl transition"
           >
             Save Quiz
           </button>
+
+          
+          {quizSaved && (
+            <div className="mt-4 text-green-600 text-center font-semibold">
+              Quiz Saved Successfully!
+            </div>
+          )}
         </form>
       </motion.div>
     </div>
   );
-}
+};
 
 export default CreateQuiz

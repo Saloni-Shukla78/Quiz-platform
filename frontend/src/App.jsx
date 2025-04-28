@@ -10,6 +10,7 @@ import QuizList from "./pages/QuizList";
 import CreateQuiz from "./pages/CreateQuiz";
 import QuizAttempt from "./pages/QuizAttempt";
 import Leaderboard from "./pages/Leaderboard";
+import Dashboard from './pages/Dashboard';
 
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
         <Route path="/quiz/:id" element={<QuizAttempt />} />
         <Route path="/leaderboard/:quizId" element={<Leaderboard />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </div>
   </Router>

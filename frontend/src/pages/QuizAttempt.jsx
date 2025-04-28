@@ -1,30 +1,38 @@
-import React from 'react'
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 const QuizAttempt = () => {
+  const { quizId } = useParams();  // Get quizId from the URL params
+  const [quiz, setQuiz] = useState(null);
   const [currentQ, setCurrentQ] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [score, setScore] = useState(null);
 
-  // Demo Questions (Replace with fetched quiz data)
-  const questions = [
-    {
-      question: "What is the capital of France?",
-      options: ["Berlin", "Madrid", "Paris", "London"],
-      correctAnswer: 2,
-    },
-    {
-      question: "Which language runs in a web browser?",
-      options: ["Java", "C", "Python", "JavaScript"],
-      correctAnswer: 3,
-    },
-    {
-      question: "Who is the founder of Microsoft?",
-      options: ["Elon Musk", "Steve Jobs", "Bill Gates", "Mark Zuckerberg"],
-      correctAnswer: 2,
-    },
-  ];
+  useEffect(() => {
+    // Fetch quiz data from the backend
+    const fetchQuiz = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/quizzes/${quizId}`);
+        setQuiz(response.data);  // Set quiz data for the frontend
+      } catch (error) {
+        console.error("Error fetching quiz:", error);
+      }
+    };
+    
+    fetchQuiz();
+  }, [quizId]);
+
+  if (!quiz || !quiz.questions || quiz.questions.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600 font-semibold text-xl">
+        No questions available for this quiz.
+      </div>
+    );
+  }
+  
+  // Demo quiz structure in case of issues (this should come from backend)
+  const questions = quiz.questions;
 
   const handleOptionClick = (index) => {
     const updated = [...selectedAnswers];
@@ -55,12 +63,7 @@ const QuizAttempt = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center px-4 py-12">
-      <motion.div
-        className="w-full max-w-2xl bg-white p-8 rounded-3xl shadow-lg space-y-6"
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
+      <div className="w-full max-w-2xl bg-white p-8 rounded-3xl shadow-lg space-y-6">
         {score === null ? (
           <>
             <h2 className="text-xl font-semibold text-indigo-700">
@@ -76,10 +79,9 @@ const QuizAttempt = () => {
                   key={i}
                   onClick={() => handleOptionClick(i)}
                   className={`w-full text-left px-4 py-3 rounded-xl border transition 
-                    ${
-                      selectedAnswers[currentQ] === i
-                        ? "bg-indigo-100 border-indigo-400 text-indigo-700 font-semibold"
-                        : "bg-gray-50 hover:bg-gray-100 border-gray-300"
+                    ${selectedAnswers[currentQ] === i
+                      ? "bg-indigo-100 border-indigo-400 text-indigo-700 font-semibold"
+                      : "bg-gray-50 hover:bg-gray-100 border-gray-300"
                     }`}
                 >
                   {option}
@@ -108,9 +110,9 @@ const QuizAttempt = () => {
             </button>
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
-}
+};
 
-export default QuizAttempt
+export default QuizAttempt;
