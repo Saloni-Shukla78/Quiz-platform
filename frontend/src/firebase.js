@@ -2,17 +2,15 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// Firebase configuration (from environment variables)
 const firebaseConfig = {
-  apiKey: "AIzaSyDDlDG3UDYxWpFqgb5Mk000fDCVED7EHwU",
-  authDomain: "quiz-platform-33f35.firebaseapp.com",
-  projectId: "quiz-platform-33f35",
-  storageBucket: "quiz-platform-33f35.firebasestorage.app",
-  messagingSenderId: "890371661069",
-  appId: "1:890371661069:web:2276a0e8739c4031bfa444"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 // Initialize Firebase
